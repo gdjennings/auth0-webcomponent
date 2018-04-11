@@ -1,20 +1,16 @@
-# Stencil App Starter
+# Auth0 Webcomponent
 
-Stencil is a compiler for building fast web apps using Web Components.
+This is a stencil based component for a framework independent authentication and authorisation flow based on Auth0
 
-Stencil combines the best concepts of the most popular frontend frameworks into a compile-time rather than run-time tool.  Stencil takes TypeScript, JSX, a tiny virtual DOM layer, efficient one-way data binding, an asynchronous rendering pipeline (similar to React Fiber), and lazy-loading out of the box, and generates 100% standards-based Web Components that run in any browser supporting the Custom Elements v1 spec.
-
-Stencil components are just Web Components, so they work in any major framework or with no framework at all. In many cases, Stencil can be used as a drop in replacement for traditional frontend frameworks given the capabilities now available in the browser, though using it as such is certainly not required.
-
-Stencil also enables a number of key capabilities on top of Web Components, in particular Server Side Rendering (SSR) without the need to run a headless browser, pre-rendering, and objects-as-properties (instead of just strings).
+It is still a crude implementation but is functional.
 
 ## Getting Started
 
-To start a new project using Stencil, clone this repo to a new directory:
+To use this webcomponent, clone this repo to a new directory:
 
 ```bash
-git clone https://github.com/ionic-team/stencil-starter.git my-app
-cd my-app
+git clone https://github.com/gdjennings/auth0-webcomponent.git auth0-webcomponent
+cd  auth0-webcomponent
 git remote rm origin
 ```
 
@@ -22,31 +18,54 @@ and run:
 
 ```bash
 npm install
-npm start
-```
-
-To view the build, start an HTTP server inside of the `/www` directory.
-
-To watch for file changes during development, run:
-
-```bash
-npm run dev
-```
-
-To build the app for production, run:
-
-```bash
 npm run build
 ```
 
-To run the unit tests once, run:
+This will create a set of distribution files inside dist/
 
-```
-npm test
-```
+The simplest way to use this component is to copy the dist folder into a project and include the auth0-webcomponent.js script in you index.html
 
-To run the unit tests and watch for file changes during development, run:
+### index.html
+```html
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
 
-```
-npm run test.watch
+<head>
+	<meta charset="utf-8">
+	<title>Auth0 Webcomponent</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
+	<meta name="theme-color" content="#16161d">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+
+	<meta http-equiv="x-ua-compatible" content="IE=Edge" />
+	<script src="https://cdn.auth0.com/js/auth0/9.2.2/auth0.js"></script>
+
+	<script src="/dist/auth0-webcomponent.js"></script>
+
+	<link rel="manifest" href="/manifest.json">
+</head>
+
+<body>
+
+	<auth0-authenticate id="auth0" client-id="<your_client_id>" domain="your_account.auth0.com"></auth0-authenticate>
+
+	<script>
+		let authElement = 
+		document.getElementById("auth0");
+
+		authElement.addEventListener("loaded", function (evt) {
+			authElement.login();
+			authElement.getUser().then(profile => {
+				document.write(JSON.stringify(profile));
+			})
+			console.log(JSON.stringify(arguments));
+			authElement.getApiAccessToken('an_api_audience', 'api:your_scope')
+			.then((r) => {
+				console.log("Woohoo");
+			})
+		});
+	</script>
+</body>
+
+</html>
 ```
