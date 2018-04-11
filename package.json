@@ -1,11 +1,14 @@
 {
-  "name": "@stencil/starter",
+  "name": "auth0-webcomponent",
   "private": true,
   "version": "0.0.1",
-  "description": "Stencil App Starter",
+  "description": "Auth0 Webcomponent",
   "files": [
     "dist/"
   ],
+  "main": "dist/auth0-webcomponent.js",
+  "types": "dist/types/components.d.ts",
+  "collection": "dist/collection/collection-manifest.json",  
   "scripts": {
     "build": "stencil build --prerender",
     "dev": "sd concurrent \"stencil build --dev --watch\" \"stencil-dev-server\" ",
@@ -15,25 +18,30 @@
     "test.watch": "jest --watch --no-cache"
   },
   "dependencies": {
-    "@stencil/core": "^0.6.1",
-    "@stencil/router": "latest"
+    "@stencil/core": "^0.6.14",
+    "@stencil/router": "latest",
+    "@types/node": "^9.4.6",
+    "auth0-js": "^9.3.1",
+    "moment": "^2.20.1",
+    "rxjs": "^5.5.6",
+    "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
     "@stencil/dev-server": "latest",
     "@stencil/utils": "latest",
-    "@types/jest": "^21.1.1",
+    "@types/jest": "^21.1.10",
     "jest": "^21.2.1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ionic-team/stencil-app-starter.git"
+    "url": "git+https://github.com/gdjennings/auth0-webcomponent.git"
   },
-  "author": "Ionic Team",
+  "author": "Grant Jennings",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ionic-team/stencil"
+    "url": "https://github.com/gdjennings/auth0-webcomponent"
   },
-  "homepage": "https://github.com/ionic-team/stencil",
+  "homepage": "https://github.com/gdjennings/auth0-webcomponent",
   "jest": {
     "transform": {
       "^.+\\.(ts|tsx)$": "<rootDir>/node_modules/@stencil/core/testing/jest.preprocessor.js"

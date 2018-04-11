@@ -3,105 +3,50 @@
  * It contains typing information for all components that exist in this project
  * and imports for stencil collections that might be configured in your stencil.config.js file
  */
-
-import {
-  MatchResults,
-} from '@stencil/router';
-
 declare global {
+  namespace JSX {
+    interface Element {}
+    export interface IntrinsicElements {}
+  }
+  namespace JSXElements {}
+
   interface HTMLStencilElement extends HTMLElement {
     componentOnReady(): Promise<this>;
     componentOnReady(done: (ele?: this) => void): void;
   }
-}
 
-
-
-import {
-  AppHome as AppHome
-} from './components/app-home/app-home';
-
-declare global {
-  interface HTMLAppHomeElement extends AppHome, HTMLStencilElement {
-  }
-  var HTMLAppHomeElement: {
-    prototype: HTMLAppHomeElement;
-    new (): HTMLAppHomeElement;
-  };
-  interface HTMLElementTagNameMap {
-    "app-home": HTMLAppHomeElement;
-  }
-  interface ElementTagNameMap {
-    "app-home": HTMLAppHomeElement;
-  }
-  namespace JSX {
-    interface IntrinsicElements {
-      "app-home": JSXElements.AppHomeAttributes;
-    }
-  }
-  namespace JSXElements {
-    export interface AppHomeAttributes extends HTMLAttributes {
-      
-    }
-  }
+  interface HTMLAttributes {}
 }
 
 
 import {
-  AppProfile as AppProfile
-} from './components/app-profile/app-profile';
+  Auth0Authenticate as Auth0Authenticate
+} from './components/auth0-authenticate/auth0-authenticate';
 
 declare global {
-  interface HTMLAppProfileElement extends AppProfile, HTMLStencilElement {
+  interface HTMLAuth0AuthenticateElement extends Auth0Authenticate, HTMLStencilElement {
   }
-  var HTMLAppProfileElement: {
-    prototype: HTMLAppProfileElement;
-    new (): HTMLAppProfileElement;
+  var HTMLAuth0AuthenticateElement: {
+    prototype: HTMLAuth0AuthenticateElement;
+    new (): HTMLAuth0AuthenticateElement;
   };
   interface HTMLElementTagNameMap {
-    "app-profile": HTMLAppProfileElement;
+    "auth0-authenticate": HTMLAuth0AuthenticateElement;
   }
   interface ElementTagNameMap {
-    "app-profile": HTMLAppProfileElement;
+    "auth0-authenticate": HTMLAuth0AuthenticateElement;
   }
   namespace JSX {
     interface IntrinsicElements {
-      "app-profile": JSXElements.AppProfileAttributes;
+      "auth0-authenticate": JSXElements.Auth0AuthenticateAttributes;
     }
   }
   namespace JSXElements {
-    export interface AppProfileAttributes extends HTMLAttributes {
-      match?: MatchResults;
-    }
-  }
-}
-
-
-import {
-  MyApp as MyApp
-} from './components/my-app/my-app';
-
-declare global {
-  interface HTMLMyAppElement extends MyApp, HTMLStencilElement {
-  }
-  var HTMLMyAppElement: {
-    prototype: HTMLMyAppElement;
-    new (): HTMLMyAppElement;
-  };
-  interface HTMLElementTagNameMap {
-    "my-app": HTMLMyAppElement;
-  }
-  interface ElementTagNameMap {
-    "my-app": HTMLMyAppElement;
-  }
-  namespace JSX {
-    interface IntrinsicElements {
-      "my-app": JSXElements.MyAppAttributes;
-    }
-  }
-  namespace JSXElements {
-    export interface MyAppAttributes extends HTMLAttributes {
-      
+    export interface Auth0AuthenticateAttributes extends HTMLAttributes {
+      clientId?: string;
+      domain?: string;
+      popup?: boolean;
+      redirectUri?: string;
     }
   }
 }

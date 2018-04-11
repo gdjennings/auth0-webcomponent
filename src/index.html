@@ -1,31 +1,52 @@
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <title>Stencil Starter App</title>
-  <meta name="Description" content="Welcome to the Stencil App Starter. You can use this starter to build entire apps all with web components using Stencil!">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
-  <meta name="theme-color" content="#16161d">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+	<meta charset="utf-8">
+	<title>Stencil Starter App</title>
+	<meta name="Description" content="Welcome to the Stencil App Starter. You can use this starter to build entire apps all with web components using Stencil!">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
+	<meta name="theme-color" content="#16161d">
+	<meta name="apple-mobile-web-app-capable" content="yes">
 
-  <meta http-equiv="x-ua-compatible" content="IE=Edge"/>
+	<meta http-equiv="x-ua-compatible" content="IE=Edge" />
+	<script src="https://cdn.auth0.com/js/auth0/9.2.2/auth0.js"></script>
 
-  <script src="/build/app.js"></script>
+	<script src="/build/auth0-webcomponent.js"></script>
 
-  <link rel="apple-touch-icon" href="/assets/icon/icon.png">
-  <link rel="icon" type="image/x-icon" href="/assets/icon/favicon.ico">
-  <link rel="manifest" href="/manifest.json">
+	<link rel="apple-touch-icon" href="/assets/icon/icon.png">
+	<link rel="icon" type="image/x-icon" href="/assets/icon/favicon.ico">
+	<link rel="manifest" href="/manifest.json">
 </head>
+
 <body>
 
-  <my-app></my-app>
+	<auth0-authenticate id="auth0" client-id="aGWyD4e40MoP6zityysNlU3x9bMuFqRp" domain="beta-mcms.auth0.com"></auth0-authenticate>
 
-  <style>
-    body {
-      margin: 0px;
-      padding: 0px;
-      font-family: sans-serif;
-    }
-  </style>
+	<style>
+		body {
+			margin: 0px;
+			padding: 0px;
+			font-family: sans-serif;
+		}
+	</style>
+
+	<script>
+		let authElement = 
+		document.getElementById("auth0");
+
+		authElement.addEventListener("loaded", function (evt) {
+			authElement.login();
+			authElement.getUser().then(profile => {
+				document.write(JSON.stringify(profile));
+			})
+			console.log(JSON.stringify(arguments));
+			authElement.getApiAccessToken('beta-mcms/OrgAdmin', 'assume:OrgAdminRole')
+			.then((r) => {
+				console.log("Woohoo");
+			})
+		});
+	</script>
 </body>
+
 </html>
