@@ -1,11 +1,9 @@
+
+import {throwError as observableThrowError, ReplaySubject,  Observable, of } from 'rxjs';
+import {first} from 'rxjs/operators';
+
 import { Component, Prop, Method, EventEmitter, Event } from '@stencil/core';
-import 'rxjs/add/observable/from';
-import 'rxjs/add/observable/of';
-import 'rxjs/add/observable/throw';
-import 'rxjs/add/operator/first';
-import {ReplaySubject} from 'rxjs/ReplaySubject';
 import 'whatwg-fetch';
-import { Observable } from 'rxjs/Observable';
 
 
 // import * as Auth0 from 'auth0-js';
@@ -101,7 +99,7 @@ export class Auth0Authenticate {
 	@Method()
 	getUser(): Promise<any> {
 		return new Promise((resolve,reject) => {
-			this.authenticationStream.first().subscribe({
+			this.authenticationStream.pipe(first()).subscribe({
 				next: (tokenResponse) => {
 					let auth0Manage = new auth0.Management({
 						domain: this.domain,
@@ -155,7 +153,7 @@ export class Auth0Authenticate {
 		if (authResult && authResult.accessToken && authResult.idToken) {
 			window.location.hash = '';
 			this.setSession(authResult);
-			return Observable.of(authResult);
+			return of(authResult);
 		} else if (err) {
 			console.error(err);
 			if (this.popup) {
@@ -163,7 +161,7 @@ export class Auth0Authenticate {
 			} else {
 				this.webAuth.authorize({state:(authResult || {}).state});
 			}
-			return Observable.throw(new Error("Redirecting for authentication"));
+			return observableThrowError(new Error("Redirecting for authentication"));
 		}
 	}
 

@@ -1,7 +1,5 @@
 exports.config = {
-  namespace: 'auth0-webcomponent',
-  generateDistribution: true,
-  generateWWW: false,
+  namespace: 'auth0-webcomponent'
 };
 
 exports.devServer = {
