@@ -1,13 +1,6 @@
+import { Component, Prop, Method } from '@stencil/core';
 
-import {throwError as observableThrowError, ReplaySubject,  Observable, of } from 'rxjs';
-import {first} from 'rxjs/operators';
-
-import { Component, Prop, Method, EventEmitter, Event } from '@stencil/core';
-import 'whatwg-fetch';
-
-
-// import * as Auth0 from 'auth0-js';
-declare var auth0: any;
+import createAuth0Client from '@auth0/auth0-spa-js';
 
 @Component({
 	tag: 'auth0-authenticate',
@@ -19,169 +12,108 @@ export class Auth0Authenticate {
 	@Prop() redirectUri: string = location.origin;
 	@Prop() popup: boolean;
 
-	@Event() authenticated: EventEmitter;
-	@Event() loaded: EventEmitter;
+  private auth0;
 
-	private webAuth: any;
-	private access_token: string;
-	private expires_at: number;
-	private profile: string;
-	private tokenRenewalTimeout: any;
-	private authenticationStream: ReplaySubject<any> = new ReplaySubject();
+  render() {}
 
-	componentWillLoad() {
-		this.webAuth = new auth0.WebAuth({
-			domain: this.domain,
-			clientID: this.clientId,
-			responseType: 'token id_token',
-			audience: `https://${this.domain}/userinfo`,
-			scope: 'openid profile email',
-			redirectUri: this.redirectUri
-		});
+	async componentWillLoad() {
+    console.debug('component loading');
+    this.auth0 = await createAuth0Client({
+      domain: this.domain,
+      audience: `https://${this.domain}/userinfo`,
+      client_id: this.clientId,
+      redirect_uri: this.redirectUri
+    });
 
-		// this.access_token = localStorage.getItem("access_token");
-		// this.expires_at = Number(localStorage.getItem("expires_at"));
-
-		this.webAuth.parseHash((err, authResult) => {
-			if (authResult) {
-				this.onAuthResponse(err, authResult);
-			}
-		});
-	}
-
-	componentDidLoad() {
-		this.loaded.emit();
+    try {
+      await this.auth0.handleRedirectCallback();
+      console.log('authenticated');
+    } catch (err) {
+      console.debug(err);
+    }
 	}
 
 	@Method()
-	login(params:any):Observable<any> {
-		return Observable.create(observer => {
-			let onlineCheck = `https://${this.domain}`;
-			const timeout = new Promise((_resolve, reject) => {
-				setTimeout(() => {
-					reject(new Error('Auth0 unreachable'));
-				}, 5000);
-			});
-			const head = fetch(onlineCheck, {
-				method: "HEAD",
-				mode: "no-cors",
-				redirect: "follow"
-			})
+	async login(): Promise<any> {
+    if (!navigator.onLine) {
+      return;
+    }
+    let onlineCheck = `https://${this.domain}`;
+    const timeout = new Promise((_resolve, reject) => {
+      setTimeout(() => {
+        reject(new Error('Auth0 unreachable'));
+      }, 5000);
+    });
+    const head = fetch(onlineCheck, {
+      method: "HEAD",
+      mode: "no-cors",
+      redirect: "follow",
+      cache: 'no-cache',
+      headers: {
+        'ngsw-bypass': 'true'
+      }
+    })
 
-			Promise.race([timeout, head]).then(() => {
-				console.log("Network ok, will try and authorise");
-				this.webAuth.checkSession(params || {}, (err, authResult) => {
-					this.onAuthResponse(err, authResult).subscribe(observer);
-				});
-			}).catch(err => {
-				console.warn("Auth0 unreachable: "+err);
-				observer.error(err);
-			})
-		});
+    try {
+      const winner = await Promise.race([timeout, head]);
+      console.log(winner);
+      console.log("Network ok, will try and authorise");
+      try {
+        await this.auth0.getTokenSilently();
+      } catch (noSession) {
+        await this.auth0.loginWithRedirect();
+      }
+    } catch (err) {
+      console.warn("this.Auth0 unreachable: "+err);
+    }
 	}
 
 	@Method()
-	logout() {
+	async logout(): Promise<any> {
 		// Remove tokens and expiry time from localStorage
-		localStorage.removeItem('access_token');
-		localStorage.removeItem('id_token');
-		localStorage.removeItem('expires_at');
-		if (this.tokenRenewalTimeout != null) {
-			clearTimeout(this.tokenRenewalTimeout);
-		}
+    return this.auth0.logout({
+      returnTo: `${location.protocol}://${location.host}:${location.port}`
+    });
 	}
 
 	@Method()
-	isAuthenticated() {
-		return this.access_token != null && new Date().getTime() < this.expires_at;
+	async isAuthenticated() {
+		return this.auth0.isAuthenticated();
 	}
 
 	@Method()
-	getUser(): Promise<any> {
-		return new Promise((resolve,reject) => {
-			this.authenticationStream.pipe(first()).subscribe({
-				next: (tokenResponse) => {
-					let auth0Manage = new auth0.Management({
-						domain: this.domain,
-						token: tokenResponse.idToken
-					});
+	async getUser(): Promise<any> {
+    const user = await this.auth0.getUser();
+    const idToken = await this.auth0.getIdTokenClaims();
+    console.log(idToken);
+    const profile = await fetch(`https://${this.domain}/api/v2/users/${user.sub}`, {
+      headers: {
+        authorization: `Bearer ${idToken.__raw}`
+      }
+    });
+    return await profile.json();
 
-					auth0Manage.getUser(this.profile.sub, (err, result) => {
-						if (err) {
-							reject(err);
-						} else {
-							resolve(result);
-						}
-					});
-				},
-				error: (err) => {
-					reject(err);
-				}
-			});
-		});
 	}
 
 
 	@Method()
-	getApiAccessToken(audience:string, scopes:string):Promise<any> {
-		return new Promise((resolve, reject) => {
-			if (!this.isAuthenticated()) {
-				reject("Need to call login first");
-			} else {
-				this.webAuth.checkSession({
+	async getApiAccessToken(audience:string, scopes:string): Promise<{accessToken: string}> {
+    try {
+			const apiToken = await this.auth0.getTokenSilently({
 					audience: audience,
 					scope: scopes
-				}, (err, result) => {
-					if (err) {
-						if (err.error === "consent_required") {
-							this.webAuth.authorize({
-								audience: audience,
-								scope: scopes
-							})
-						}
-						console.error(err);
-						reject(err);
-					}
-					resolve(result);
-				});
-			}
-		})
-	}
-
-	
-	private onAuthResponse(err, authResult):Observable<any> {
-		if (authResult && authResult.accessToken && authResult.idToken) {
-			window.location.hash = '';
-			this.setSession(authResult);
-			return of(authResult);
-		} else if (err) {
-			console.error(err);
-			if (this.popup) {
-				this.webAuth.popup.authorize({});
-			} else {
-				this.webAuth.authorize({state:(authResult || {}).state});
-			}
-			return observableThrowError(new Error("Redirecting for authentication"));
+      });
+      return {
+        accessToken: apiToken
+      };
+    } catch (err) {
+      if (err.error === "consent_required") {
+        this.auth0.loginWithRedirect({
+          audience: audience,
+          scope: scopes
+        });
+      }
 		}
-	}
-
-	private setSession(authResult) {
-		// Set the time that the Access Token will expire at
-		this.access_token = authResult.accessToken;
-		this.expires_at = (authResult.expiresIn - 5/*seconds*/) * 1000 + new Date().getTime();
-
-		// localStorage.setItem('access_token', authResult.accessToken);
-		// localStorage.setItem('id_token', authResult.idToken);
-		// localStorage.setItem('expires_at', JSON.stringify(this.expires_at));
-		this.profile = authResult.idTokenPayload;
-
-		this.authenticated.emit(true);
-		this.authenticationStream.next(authResult);
-		let delay = this.expires_at - Date.now();
-		if (delay > 0) {
-			this.tokenRenewalTimeout = setTimeout(() => this.login({state:authResult.state}), delay);
-		}
-
 	}
 
 }

@@ -1,0 +1,12 @@
+{
+  "entries": [
+    "components/auth0-authenticate/auth0-authenticate.js"
+  ],
+  "compiler": {
+    "name": "@stencil/core",
+    "version": "1.4.0",
+    "typescriptVersion": "3.6.2"
+  },
+  "collections": [],
+  "bundles": []
+}
