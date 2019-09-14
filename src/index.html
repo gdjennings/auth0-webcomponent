@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
+  <title>Stencil Component Starter</title>
+
+  <script type="module" src="/build/auth0-webcomponent.esm.js"></script>
+  <script nomodule src="/build/auth0-webcomponent.js"></script>
+
+</head>
+<body>
+
+  <auth0-authenticate #auth0
+        client-id="D4ch6Yw0wpmpbB3VItTMCwBApAuTBy9f"
+        domain="beta-mcms.auth0.com">
+  </auth0-authenticate>
+
+  <script type="module">
+    const auth = document.querySelector('auth0-authenticate');
+    auth.login().then(token => {
+      return auth.getApiAccessToken('beta-mcms/OrgAdmin', 'assume:OrgAdminRole');
+    }).then(apiToken => {
+      console.log(apiToken);
+    });
+
+    auth.getUser().then(user => {
+      document.write(`<pre>${JSON.stringify(user, 2)}</pre>`);
+    })
+  </script>
+</body>
+</html>

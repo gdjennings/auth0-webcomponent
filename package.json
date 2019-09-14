@@ -1,60 +1,32 @@
 {
   "name": "auth0-webcomponent",
-  "private": true,
   "version": "0.0.1",
   "description": "Auth0 Webcomponent",
-  "files": [
-    "dist/"
-  ],
   "main": "dist/index.js",
-  "module": "dist/esm/index.js",
-  "types": "dist/types/components.d.ts",
+  "module": "dist/index.mjs",
+  "es2015": "dist/esm/index.mjs",
+  "es2017": "dist/esm/index.mjs",
+  "types": "dist/types/index.d.ts",
   "collection": "dist/collection/collection-manifest.json",
+  "collection:main": "dist/collection/index.js",
+  "unpkg": "dist/auth0-webcomponent/auth0-webcomponent.js",
+  "files": [
+    "dist/",
+    "loader/"
+  ],
   "scripts": {
-    "build": "stencil build --prerender",
-    "dev": "sd concurrent \"stencil build --dev --watch\" \"stencil-dev-server\" ",
-    "serve": "stencil-dev-server",
-    "start": "npm run dev",
-    "test": "jest --no-cache",
-    "test.watch": "jest --watch --no-cache"
-  },
-  "dependencies": {
-    "@stencil/core": "^0.9.11",
-    "@stencil/router": "latest",
-    "@types/node": "^10.3.5",
-    "auth0-js": "^9.6.1",
-    "moment": "^2.22.2",
-    "request": "^2.87.0",
-    "rxjs": "^6.2.1",
-    "whatwg-fetch": "^2.0.4"
+    "build": "stencil build --docs",
+    "start": "stencil build --dev --watch --serve",
+    "test": "stencil test --spec --e2e",
+    "test.watch": "stencil test --spec --e2e --watchAll",
+    "generate": "stencil generate"
   },
   "devDependencies": {
-    "@stencil/dev-server": "latest",
-    "@stencil/utils": "latest",
-    "@types/jest": "^23.1.1",
-    "jest": "^23.1.0"
+    "@stencil/core": "^1.4.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/gdjennings/auth0-webcomponent.git"
-  },
-  "author": "Grant Jennings",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/gdjennings/auth0-webcomponent"
-  },
-  "homepage": "https://github.com/gdjennings/auth0-webcomponent",
-  "jest": {
-    "transform": {
-      "^.+\\.(ts|tsx)$": "<rootDir>/node_modules/@stencil/core/testing/jest.preprocessor.js"
-    },
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(tsx?|jsx?)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "json",
-      "jsx"
-    ]
+  "dependencies": {
+    "@auth0/auth0-spa-js": "^1.2.3",
+    "rxjs": "^6.5.3"
   }
 }
