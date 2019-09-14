@@ -25,9 +25,11 @@ export class Auth0Authenticate {
       redirect_uri: this.redirectUri
     });
 
-    this.auth0.handleRedirectCallback().catch(err => {
-      console.debug(err);
-    });
+    if (location.search) {
+      this.auth0.handleRedirectCallback().catch(err => {
+        console.debug(err);
+      });
+    }
 	}
 
 	@Method()
