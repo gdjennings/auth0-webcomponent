@@ -25,7 +25,7 @@ export class Auth0Authenticate {
       redirect_uri: this.redirectUri
     });
 
-    if (location.search) {
+    if ((location.search || '').length > 0) {
       this.auth0.handleRedirectCallback().catch(err => {
         console.debug(err);
       });
@@ -54,8 +54,7 @@ export class Auth0Authenticate {
     })
 
     try {
-      const winner = await Promise.race([timeout, head]);
-      console.log(winner);
+      await Promise.race([timeout, head]);
       console.log("Network ok, will try and authorise");
       try {
         await this.auth0.getTokenSilently();
@@ -92,7 +91,6 @@ export class Auth0Authenticate {
     return await profile.json();
 
 	}
-
 
 	@Method()
 	async getApiAccessToken(audience:string, scopes:string): Promise<{accessToken: string}> {
