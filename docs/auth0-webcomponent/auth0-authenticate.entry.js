@@ -39,12 +39,10 @@ const Auth0Authenticate = class {
             client_id: this.clientId,
             redirect_uri: this.redirectUri
         });
-        try {
-            await this.auth0.handleRedirectCallback();
-            console.log('authenticated');
-        }
-        catch (err) {
-            console.debug(err);
+        if ((location.search || '').length > 0) {
+            this.auth0.handleRedirectCallback().catch(err => {
+                console.debug(err);
+            });
         }
     }
     async login() {
@@ -67,8 +65,7 @@ const Auth0Authenticate = class {
             }
         });
         try {
-            const winner = await Promise.race([timeout, head]);
-            console.log(winner);
+            await Promise.race([timeout, head]);
             console.log("Network ok, will try and authorise");
             try {
                 await this.auth0.getTokenSilently();
@@ -93,7 +90,6 @@ const Auth0Authenticate = class {
     async getUser() {
         const user = await this.auth0.getUser();
         const idToken = await this.auth0.getIdTokenClaims();
-        console.log(idToken);
         const profile = await fetch(`https://${this.domain}/api/v2/users/${user.sub}`, {
             headers: {
                 authorization: `Bearer ${idToken.__raw}`
