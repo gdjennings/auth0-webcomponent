@@ -25,12 +25,9 @@ export class Auth0Authenticate {
       redirect_uri: this.redirectUri
     });
 
-    try {
-      await this.auth0.handleRedirectCallback();
-      console.log('authenticated');
-    } catch (err) {
+    this.auth0.handleRedirectCallback().catch(err => {
       console.debug(err);
-    }
+    });
 	}
 
 	@Method()
@@ -85,7 +82,6 @@ export class Auth0Authenticate {
 	async getUser(): Promise<any> {
     const user = await this.auth0.getUser();
     const idToken = await this.auth0.getIdTokenClaims();
-    console.log(idToken);
     const profile = await fetch(`https://${this.domain}/api/v2/users/${user.sub}`, {
       headers: {
         authorization: `Bearer ${idToken.__raw}`
