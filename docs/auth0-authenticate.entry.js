@@ -72,7 +72,7 @@ const Auth0Authenticate = class {
                 return true;
             }
             catch (noSession) {
-                if (onlineResponse && onlineResponse.status === 200) {
+                if (onlineResponse && (onlineResponse.status === 200 || onlineResponse.status === 0)) {
                     return await this.auth0.loginWithRedirect();
                 }
                 else {
