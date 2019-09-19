@@ -65,14 +65,19 @@ const Auth0Authenticate = class {
             }
         });
         try {
-            await Promise.race([timeout, head]);
+            const onlineResponse = await Promise.race([timeout, head]);
             console.log("Network ok, will try and authorise");
             try {
                 await this.auth0.getTokenSilently();
                 return true;
             }
             catch (noSession) {
-                await this.auth0.loginWithRedirect();
+                if (onlineResponse || onlineResponse.status === 200) {
+                    return await this.auth0.loginWithRedirect();
+                }
+                else {
+                    return false;
+                }
             }
         }
         catch (err) {

@@ -54,14 +54,18 @@ export class Auth0Authenticate {
     })
 
     try {
-      await Promise.race([timeout, head]);
+      const onlineResponse = await Promise.race([timeout, head]);
       console.log("Network ok, will try and authorise");
-      try {
-        await this.auth0.getTokenSilently();
-        return true;
-      } catch (noSession) {
-        await this.auth0.loginWithRedirect();
-      }
+        try {
+          await this.auth0.getTokenSilently();
+          return true;
+        } catch (noSession) {
+          if (onlineResponse || (onlineResponse as Response).status === 200) {
+            return await this.auth0.loginWithRedirect();
+          } else {
+            return false;
+          }
+        }
     } catch (err) {
       console.warn("this.Auth0 unreachable: "+err);
       return false;
