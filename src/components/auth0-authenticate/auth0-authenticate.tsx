@@ -60,7 +60,7 @@ export class Auth0Authenticate {
           await this.auth0.getTokenSilently();
           return true;
         } catch (noSession) {
-          if (onlineResponse || (onlineResponse as Response).status === 200) {
+          if (onlineResponse && (onlineResponse as Response).status === 200) {
             return await this.auth0.loginWithRedirect();
           } else {
             return false;
