@@ -47,7 +47,7 @@ const Auth0Authenticate = class {
     }
     async login() {
         if (!navigator.onLine) {
-            return;
+            return false;
         }
         let onlineCheck = `https://${this.domain}`;
         const timeout = new Promise((_resolve, reject) => {
@@ -59,7 +59,7 @@ const Auth0Authenticate = class {
             method: "HEAD",
             mode: "no-cors",
             redirect: "follow",
-            cache: 'no-cache',
+            cache: 'no-store',
             headers: {
                 'ngsw-bypass': 'true'
             }
@@ -69,6 +69,7 @@ const Auth0Authenticate = class {
             console.log("Network ok, will try and authorise");
             try {
                 await this.auth0.getTokenSilently();
+                return true;
             }
             catch (noSession) {
                 await this.auth0.loginWithRedirect();
@@ -76,6 +77,7 @@ const Auth0Authenticate = class {
         }
         catch (err) {
             console.warn("this.Auth0 unreachable: " + err);
+            return false;
         }
     }
     async logout() {

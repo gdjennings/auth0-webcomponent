@@ -1,0 +1,97 @@
+import { registerInstance as __stencil_registerInstance } from "@stencil/core";
+import createAuth0Client from '@auth0/auth0-spa-js';
+export const Auth0Authenticate = class {
+    constructor(hostRef) {
+        __stencil_registerInstance(this, hostRef);
+        this.redirectUri = location.origin;
+    }
+    render() { }
+    async componentWillLoad() {
+        console.debug('component loading');
+        this.auth0 = await createAuth0Client({
+            domain: this.domain,
+            audience: `https://${this.domain}/userinfo`,
+            client_id: this.clientId,
+            redirect_uri: this.redirectUri
+        });
+        if ((location.search || '').length > 0) {
+            this.auth0.handleRedirectCallback().catch(err => {
+                console.debug(err);
+            });
+        }
+    }
+    async login() {
+        if (!navigator.onLine) {
+            return false;
+        }
+        let onlineCheck = `https://${this.domain}`;
+        const timeout = new Promise((_resolve, reject) => {
+            setTimeout(() => {
+                reject(new Error('Auth0 unreachable'));
+            }, 5000);
+        });
+        const head = fetch(onlineCheck, {
+            method: "HEAD",
+            mode: "no-cors",
+            redirect: "follow",
+            cache: 'no-store',
+            headers: {
+                'ngsw-bypass': 'true'
+            }
+        });
+        try {
+            await Promise.race([timeout, head]);
+            console.log("Network ok, will try and authorise");
+            try {
+                await this.auth0.getTokenSilently();
+                return true;
+            }
+            catch (noSession) {
+                await this.auth0.loginWithRedirect();
+            }
+        }
+        catch (err) {
+            console.warn("this.Auth0 unreachable: " + err);
+            return false;
+        }
+    }
+    async logout() {
+        // Remove tokens and expiry time from localStorage
+        return this.auth0.logout({
+            returnTo: `${location.protocol}://${location.host}:${location.port}`
+        });
+    }
+    async isAuthenticated() {
+        return this.auth0.isAuthenticated();
+    }
+    async getUser() {
+        const user = await this.auth0.getUser();
+        const idToken = await this.auth0.getIdTokenClaims();
+        const profile = await fetch(`https://${this.domain}/api/v2/users/${user.sub}`, {
+            headers: {
+                authorization: `Bearer ${idToken.__raw}`
+            }
+        });
+        return await profile.json();
+    }
+    async getApiAccessToken(audience, scopes) {
+        try {
+            const apiToken = await this.auth0.getTokenSilently({
+                audience: audience,
+                scope: scopes
+            });
+            return {
+                accessToken: apiToken
+            };
+        }
+        catch (err) {
+            if (err.error === "consent_required") {
+                this.auth0.loginWithRedirect({
+                    audience: audience,
+                    scope: scopes
+                });
+            }
+        }
+    }
+    static get style() { return "STYLE_TEXT_PLACEHOLDER:auth0-authenticate"; }
+};
