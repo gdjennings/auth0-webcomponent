@@ -22,11 +22,11 @@
     "generate": "stencil generate"
   },
   "devDependencies": {
-    "@stencil/core": "^1.4.0"
+    "@stencil/core": "^1.15.0"
   },
   "license": "MIT",
   "dependencies": {
-    "@auth0/auth0-spa-js": "^1.2.3",
-    "rxjs": "^6.5.3"
+    "@auth0/auth0-spa-js": "^1.10.0",
+    "rxjs": "^6.5.5"
   }
 }

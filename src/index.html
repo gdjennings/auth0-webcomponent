@@ -17,16 +17,20 @@
   </auth0-authenticate>
 
   <script type="module">
-    const auth = document.querySelector('auth0-authenticate');
-    auth.login().then(token => {
-      return auth.getApiAccessToken('beta-mcms/OrgAdmin', 'assume:OrgAdminRole');
+    customElements.whenDefined('auth0-authenticate').then(() => {
+      const auth = document.querySelector('auth0-authenticate');
+      return auth.login().then(token => {
+        auth.getUser().then(user => {
+          document.write(`<pre>${JSON.stringify(user, 2)}</pre>`);
+        });
+        return auth.getApiAccessToken('beta-mcms/OrgAdmin', 'assume:OrgAdminRole');
+      });
     }).then(apiToken => {
       console.log(apiToken);
+    }).catch(err => {
+      console.error(err);
     });
 
-    auth.getUser().then(user => {
-      document.write(`<pre>${JSON.stringify(user, 2)}</pre>`);
-    })
   </script>
 </body>
 </html>

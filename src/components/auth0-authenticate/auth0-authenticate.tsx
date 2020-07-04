@@ -22,7 +22,9 @@ export class Auth0Authenticate {
       domain: this.domain,
       audience: `https://${this.domain}/userinfo`,
       client_id: this.clientId,
-      redirect_uri: this.redirectUri
+      redirect_uri: this.redirectUri,
+      useRefreshTokens: true,
+      cacheLocation: 'localstorage',
     });
 
     if ((location.search || '').length > 0) {
@@ -61,10 +63,9 @@ export class Auth0Authenticate {
           return true;
         } catch (noSession) {
           if (onlineResponse && ((onlineResponse as Response).status === 200 || (onlineResponse as Response).status === 0))  {
-            return await this.auth0.loginWithRedirect();
-          } else {
-            return false;
+            await this.auth0.loginWithRedirect();
           }
+          return false;
         }
     } catch (err) {
       console.warn("this.Auth0 unreachable: "+err);
@@ -76,7 +77,7 @@ export class Auth0Authenticate {
 	async logout(): Promise<any> {
 		// Remove tokens and expiry time from localStorage
     return this.auth0.logout({
-      returnTo: `${location.protocol}://${location.host}:${location.port}`
+      returnTo: `${location.protocol}//${location.host}`
     });
 	}
 
@@ -88,13 +89,16 @@ export class Auth0Authenticate {
 	@Method()
 	async getUser(): Promise<any> {
     const user = await this.auth0.getUser();
-    const idToken = await this.auth0.getIdTokenClaims();
-    const profile = await fetch(`https://${this.domain}/api/v2/users/${user.sub}`, {
-      headers: {
-        authorization: `Bearer ${idToken.__raw}`
-      }
-    });
-    return await profile.json();
+    if (user) {
+      const idToken = await this.auth0.getIdTokenClaims();
+      const profile = await fetch(`https://${this.domain}/api/v2/users/${user.sub}`, {
+        headers: {
+          authorization: `Bearer ${idToken.__raw}`
+        }
+      });
+      return await profile.json();
+    }
+    return Promise.reject('Not authenticated');
 
 	}
 
