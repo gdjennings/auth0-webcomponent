@@ -1,15 +1,15 @@
 {
   "name": "auth0-webcomponent",
-  "version": "0.0.1",
-  "description": "Auth0 Webcomponent",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
+  "version": "3.0.0",
+  "description": "Webcomponent for auth0 hosted login",
+  "main": "dist/index.cjs.js",
+  "module": "dist/custom-elements/index.js",
   "es2015": "dist/esm/index.mjs",
   "es2017": "dist/esm/index.mjs",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/custom-elements/index.d.ts",
   "collection": "dist/collection/collection-manifest.json",
   "collection:main": "dist/collection/index.js",
-  "unpkg": "dist/auth0-webcomponent/auth0-webcomponent.js",
+  "unpkg": "dist/auth0-webcomponent/auth0-webcomponent.esm.js",
   "files": [
     "dist/",
     "loader/"
@@ -21,12 +21,10 @@
     "test.watch": "stencil test --spec --e2e --watchAll",
     "generate": "stencil generate"
   },
-  "devDependencies": {
-    "@stencil/core": "^1.15.0"
-  },
-  "license": "MIT",
   "dependencies": {
-    "@auth0/auth0-spa-js": "^1.10.0",
-    "rxjs": "^6.5.5"
-  }
+    "@stencil/core": "^2.15.1",
+    "@auth0/auth0-spa-js": "^1.21.0",
+    "rxjs": "^7.5.5"
+  },
+  "license": "MIT"
 }

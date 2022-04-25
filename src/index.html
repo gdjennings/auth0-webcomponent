@@ -1,36 +1,14 @@
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
-  <title>Stencil Component Starter</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0" />
+    <title>Stencil Component Starter</title>
 
-  <script type="module" src="/build/auth0-webcomponent.esm.js"></script>
-  <script nomodule src="/build/auth0-webcomponent.js"></script>
-
-</head>
-<body>
-
-  <auth0-authenticate #auth0
-        client-id="D4ch6Yw0wpmpbB3VItTMCwBApAuTBy9f"
-        domain="beta-mcms.auth0.com">
-  </auth0-authenticate>
-
-  <script type="module">
-    customElements.whenDefined('auth0-authenticate').then(() => {
-      const auth = document.querySelector('auth0-authenticate');
-      return auth.login().then(token => {
-        auth.getUser().then(user => {
-          document.write(`<pre>${JSON.stringify(user, 2)}</pre>`);
-        });
-        return auth.getApiAccessToken('beta-mcms/OrgAdmin', 'assume:OrgAdminRole');
-      });
-    }).then(apiToken => {
-      console.log(apiToken);
-    }).catch(err => {
-      console.error(err);
-    });
-
-  </script>
-</body>
+    <script type="module" src="/build/auth0-webcomponent.esm.js"></script>
+    <script nomodule src="/build/auth0-webcomponent.js"></script>
+  </head>
+  <body>
+    <my-component first="Stencil" last="'Don't call me a framework' JS"></my-component>
+  </body>
 </html>

@@ -18,29 +18,20 @@ export class Auth0Authenticate {
 
 	async componentWillLoad() {
     console.debug('component loading');
-    try {
-      this.auth0 = await createAuth0Client({
-        domain: this.domain,
-        audience: `https://${this.domain}/userinfo`,
-        client_id: this.clientId,
-        redirect_uri: this.redirectUri,
-        useRefreshTokens: false,
-        cacheLocation: 'localstorage',
-      });
-    } catch (err) {
-      console.warn('Failed to create auth0Client. Odd');
-      console.error(err);
-    }
+    this.auth0 = await createAuth0Client({
+      domain: this.domain,
+      audience: `https://${this.domain}/userinfo`,
+      client_id: this.clientId,
+      redirect_uri: this.redirectUri,
+      cacheLocation: 'localstorage',
+      useRefreshTokens: true
+    });
 
-    if ((location.search || '').length > 0) {
-      this.auth0.handleRedirectCallback().catch(err => {
-        console.debug(err);
-      });
-    }
+    await this.auth0.handleRedirectCallback().catch(err => console.debug(err));
 	}
 
 	@Method()
-	async login(): Promise<any> {
+	async login(): Promise<boolean> {
     if (!navigator.onLine) {
       return false;
     }
@@ -61,17 +52,15 @@ export class Auth0Authenticate {
     })
 
     try {
-      const onlineResponse = await Promise.race([timeout, head]);
+      const winner = await Promise.race([timeout, head]);
+      console.log(winner);
       console.log("Network ok, will try and authorise");
-        try {
-          await this.auth0.getTokenSilently();
-          return true;
-        } catch (noSession) {
-          if (onlineResponse && ((onlineResponse as Response).status === 200 || (onlineResponse as Response).status === 0))  {
-            await this.auth0.loginWithRedirect();
-          }
-          return false;
-        }
+      try {
+        await this.auth0.getTokenSilently();
+        return true;
+      } catch (noSession) {
+        await this.auth0.loginWithRedirect();
+      }
     } catch (err) {
       console.warn("this.Auth0 unreachable: "+err);
       return false;
@@ -82,30 +71,29 @@ export class Auth0Authenticate {
 	async logout(): Promise<any> {
 		// Remove tokens and expiry time from localStorage
     return this.auth0.logout({
-      returnTo: `${location.protocol}//${location.host}`
+      returnTo: `${location.origin}`
     });
 	}
 
 	@Method()
 	async isAuthenticated() {
-		return this.auth0.getTokenSilently();
+		return this.auth0.isAuthenticated();
 	}
 
 	@Method()
 	async getUser(): Promise<any> {
     const user = await this.auth0.getUser();
-    if (user) {
-      const idToken = await this.auth0.getIdTokenClaims();
-      const profile = await fetch(`https://${this.domain}/api/v2/users/${user.sub}`, {
-        headers: {
-          authorization: `Bearer ${idToken.__raw}`
-        }
-      });
-      return await profile.json();
-    }
-    return Promise.reject('Not authenticated');
+    const idToken = await this.auth0.getIdTokenClaims();
+    console.log(idToken);
+    const profile = await fetch(`https://${this.domain}/api/v2/users/${user.sub}`, {
+      headers: {
+        authorization: `Bearer ${idToken.__raw}`
+      }
+    });
+    return await profile.json();
 
 	}
+
 
 	@Method()
 	async getApiAccessToken(audience:string, scopes:string): Promise<{accessToken: string}> {
@@ -118,8 +106,8 @@ export class Auth0Authenticate {
         accessToken: apiToken
       };
     } catch (err) {
-      if (err.error === "consent_required") {
-        this.auth0.loginWithRedirect({
+      if (err.error === "consent_required" || err.error === 'login_required') {
+        this.auth0.loginWithPopup({
           audience: audience,
           scope: scopes
         });

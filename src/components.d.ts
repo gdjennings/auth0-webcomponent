@@ -12,7 +12,7 @@ export namespace Components {
         "getApiAccessToken": (audience: string, scopes: string) => Promise<{ accessToken: string; }>;
         "getUser": () => Promise<any>;
         "isAuthenticated": () => Promise<any>;
-        "login": () => Promise<any>;
+        "login": () => Promise<boolean>;
         "logout": () => Promise<any>;
         "popup": boolean;
         "redirectUri": string;
